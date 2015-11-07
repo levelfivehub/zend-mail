@@ -35,8 +35,18 @@ class ContentTypeTest extends \PHPUnit_Framework_TestCase
         $contentTypeHeader = ContentType::fromString(
             'Content-Type: multipart/alternative; boundary="Apple-Mail=_1B852F10-F9C6-463D-AADD-CD503A5428DD";'
         );
+
         $params = $contentTypeHeader->getParameters();
+
         $this->assertEquals(['boundary' => 'Apple-Mail=_1B852F10-F9C6-463D-AADD-CD503A5428DD'], $params);
+        $this->assertEquals(
+            'Apple-Mail=_1B852F10-F9C6-463D-AADD-CD503A5428DD',
+            $contentTypeHeader->getParameter('boundary')
+        );
+
+        $contentTypeHeader->removeParameter('boundary');
+
+        $this->assertNull($contentTypeHeader->getParameter('boundary'));
     }
 
     public function testExtractsExtraInformationWithoutBeingConfusedByTrailingSemicolon()
@@ -70,6 +80,8 @@ class ContentTypeTest extends \PHPUnit_Framework_TestCase
         $header->setType($type);
         foreach ($parameters as $name => $value) {
             $header->addParameter($name, $value);
+
+            $this->assertEquals($value, $header->getParameter($name));
         }
 
         $this->assertEquals('Content-Type', $header->getFieldName(), 'getFieldName() value not match');
@@ -158,6 +170,7 @@ class ContentTypeTest extends \PHPUnit_Framework_TestCase
             'newline'   => ["Content-Type: text/html;\nlevel=1", $invalidArgumentException, 'header value'],
             'cr-lf'     => ["Content-Type: text/html\r\n;level=1", $invalidArgumentException, 'header value'],
             'multiline' => ["Content-Type: text/html;\r\nlevel=1\r\nq=0.1", $invalidArgumentException, 'header value'],
+            'invalid header' => ["DEMO: text/html;\r\nlevel=1\r\nq=0.1", $invalidArgumentException, 'header value'],
         ];
         // @codingStandardsIgnoreEnd
     }
