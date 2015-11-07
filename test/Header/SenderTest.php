@@ -9,6 +9,7 @@
 
 namespace ZendTest\Mail\Header;
 
+use Zend\Mail\Exception\InvalidArgumentException;
 use Zend\Mail\Address;
 use Zend\Mail\Header;
 
@@ -33,9 +34,10 @@ class SenderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider validSenderHeaderDataProvider
      * @group ZF2015-04
+     *
      * @param string $email
      * @param null|string $name
-     * @param string $expectedFieldValue,
+     * @param string $expectedFieldValue ,
      * @param string $encodedValue
      * @param string $encoding
      */
@@ -47,9 +49,16 @@ class SenderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($encoding, $header->getEncoding());
     }
 
+    public function testNoSenderHeaderThrowsException()
+    {
+        $this->setExpectedException(InvalidArgumentException::class);
+        Header\Sender::fromString('test:test');
+    }
+
     /**
      * @dataProvider invalidSenderEncodedDataProvider
      * @group ZF2015-04
+     *
      * @param string $decodedValue
      * @param string $expectedException
      * @param string|null $expectedExceptionMessage
@@ -66,10 +75,11 @@ class SenderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider validSenderDataProvider
      * @group ZF2015-04
+     *
      * @param string $email
      * @param null|string $name
      * @param string $encodedValue
-     * @param string $expectedFieldValue,
+     * @param string $expectedFieldValue ,
      * @param string $encoding
      */
     public function testSetAddressValidValue($email, $name, $expectedFieldValue, $encodedValue, $encoding)
@@ -85,6 +95,7 @@ class SenderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider invalidSenderDataProvider
      * @group ZF2015-04
+     *
      * @param string $email
      * @param null|string $name
      */
@@ -98,9 +109,10 @@ class SenderTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider validSenderDataProvider
      * @group ZF2015-04
+     *
      * @param string $email
      * @param null|string $name
-     * @param string $expectedFieldValue,
+     * @param string $expectedFieldValue ,
      * @param string $encodedValue
      * @param string $encoding
      */
@@ -126,21 +138,21 @@ class SenderTest extends \PHPUnit_Framework_TestCase
                 null,
                 '<foo@bar>',
                 '<foo@bar>',
-                'ASCII'
+                'ASCII',
             ],
-            'ASCII name' => [
+            'ASCII name'    => [
                 'foo@bar',
                 'foo',
                 'foo <foo@bar>',
                 'foo <foo@bar>',
-                'ASCII'
+                'ASCII',
             ],
-            'UTF-8 name' => [
+            'UTF-8 name'    => [
                 'foo@bar',
                 'ázÁZ09',
                 'ázÁZ09 <foo@bar>',
                 '=?UTF-8?Q?=C3=A1z=C3=81Z09?= <foo@bar>',
-                'UTF-8'
+                'UTF-8',
             ],
         ];
     }
@@ -154,8 +166,8 @@ class SenderTest extends \PHPUnit_Framework_TestCase
             'Unbracketed email' => [
                 '<foo@bar>',
                 'foo@bar',
-                'ASCII'
-            ]
+                'ASCII',
+            ],
         ]);
     }
 
@@ -165,7 +177,7 @@ class SenderTest extends \PHPUnit_Framework_TestCase
 
         return [
             // Description => [sender address, sender name, exception class, exception message],
-            'Empty' => ['', null, $mailInvalidArgumentException, null],
+            'Empty'     => ['', null, $mailInvalidArgumentException, null],
             'any ASCII' => ['azAZ09-_', null, $mailInvalidArgumentException, null],
             'any UTF-8' => ['ázÁZ09-_', null, $mailInvalidArgumentException, null],
 
@@ -188,7 +200,7 @@ class SenderTest extends \PHPUnit_Framework_TestCase
 
         return [
             // Description => [decoded format, exception class, exception message],
-            'Empty' => ['', $mailInvalidArgumentException, null],
+            'Empty'     => ['', $mailInvalidArgumentException, null],
             'any ASCII' => ['azAZ09-_', $mailInvalidArgumentException, null],
             'any UTF-8' => ['ázÁZ09-_', $mailInvalidArgumentException, null],
             ["xxx yyy\n", $mailInvalidArgumentException, null],
@@ -198,8 +210,8 @@ class SenderTest extends \PHPUnit_Framework_TestCase
             ["foo\r\n@\r\nbar", $mailInvalidArgumentException, null],
 
             ["ázÁZ09 <foo@bar>", $headerInvalidArgumentException, null],
-            'newline' => ["<foo@bar>\n", $headerInvalidArgumentException, null],
-            'cr-lf' => ["<foo@bar>\r\n", $headerInvalidArgumentException, null],
+            'newline'   => ["<foo@bar>\n", $headerInvalidArgumentException, null],
+            'cr-lf'     => ["<foo@bar>\r\n", $headerInvalidArgumentException, null],
             'cr-lf-wsp' => ["<foo@bar>\r\n\r\n", $headerInvalidArgumentException, null],
             'multiline' => ["<foo\r\n@\r\nbar>", $headerInvalidArgumentException, null],
         ];

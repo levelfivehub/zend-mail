@@ -19,29 +19,42 @@ class MessageIdTest extends \PHPUnit_Framework_TestCase
     public function testSettingManually()
     {
         $id = "CALTvGe4_oYgf9WsYgauv7qXh2-6=KbPLExmJNG7fCs9B=1nOYg@mail.example.com";
-        $messageid = new Header\MessageId();
-        $messageid->setId($id);
+        $messageId = new Header\MessageId();
+        $messageId->setId($id);
 
         $expected = sprintf('<%s>', $id);
-        $this->assertEquals($expected, $messageid->getFieldValue());
+        $this->assertEquals($expected, $messageId->getFieldValue());
+    }
+
+    public function testHeaderIdValid()
+    {
+        $headerLine = 'message-id: abc123';
+        $messageId = Header\MessageId::fromString($headerLine);
+
+        $this->assertEquals($messageId->getId(), '<abc123>');
+        $this->assertEquals($messageId->toString(), 'Message-ID: <abc123>');
+        $this->assertEquals($messageId->getFieldName(), 'Message-ID');
     }
 
     public function testAutoGeneration()
     {
-        $messageid = new Header\MessageId();
-        $messageid->setId();
+        $messageId = new Header\MessageId();
+        $messageId->setId();
 
-        $this->assertContains('@', $messageid->getFieldValue());
+        $this->assertContains('@', $messageId->getFieldValue());
     }
 
-
+    /**
+     * @return array
+     */
     public function headerLines()
     {
         return [
-            'newline'      => ["Message-ID: foo\nbar"],
-            'cr-lf'        => ["Message-ID: bar\r\nfoo"],
-            'cr-lf-wsp'    => ["Message-ID: bar\r\n\r\n baz"],
-            'multiline'    => ["Message-ID: baz\r\nbar\r\nbau"],
+            'newline'        => ["Message-ID: foo\nbar"],
+            'cr-lf'          => ["Message-ID: bar\r\nfoo"],
+            'cr-lf-wsp'      => ["Message-ID: bar\r\n\r\n baz"],
+            'multiline'      => ["Message-ID: baz\r\nbar\r\nbau"],
+            'invalid-string' => ["invalid: baz"],
         ];
     }
 
@@ -52,17 +65,17 @@ class MessageIdTest extends \PHPUnit_Framework_TestCase
     public function testFromStringPreventsCrlfInjectionOnDetection($header)
     {
         $this->setExpectedException('Zend\Mail\Header\Exception\InvalidArgumentException');
-        $messageid = Header\MessageId::fromString($header);
+        Header\MessageId::fromString($header);
     }
 
     public function invalidIdentifiers()
     {
         return [
-            'newline'      => ["foo\nbar"],
-            'cr-lf'        => ["bar\r\nfoo"],
-            'cr-lf-wsp'    => ["bar\r\n\r\n baz"],
-            'multiline'    => ["baz\r\nbar\r\nbau"],
-            'folding'      => ["bar\r\n baz"],
+            'newline'   => ["foo\nbar"],
+            'cr-lf'     => ["bar\r\nfoo"],
+            'cr-lf-wsp' => ["bar\r\n\r\n baz"],
+            'multiline' => ["baz\r\nbar\r\nbau"],
+            'folding'   => ["bar\r\n baz"],
         ];
     }
 
